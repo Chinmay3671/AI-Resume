@@ -6,9 +6,20 @@ import { GoogleGenAI } from "@google/genai";
 import multer from "multer";
 import mammoth from "mammoth";
 
-// Dynamic import for pdf-parse CJS compatibility in Node ESM
-// @ts-ignore
-const pdfParse = (await import('pdf-parse')).default;
+// Async helper for pdf-parse CJS module loading without top-level await
+let pdfParseInstance: any = null;
+async function getPdfParse() {
+  if (!pdfParseInstance) {
+    try {
+      // @ts-ignore
+      const mod = await import('pdf-parse');
+      pdfParseInstance = (mod as any).default || mod;
+    } catch (e) {
+      pdfParseInstance = null;
+    }
+  }
+  return pdfParseInstance;
+}
 
 const app = express();
 const PORT = parseInt(process.env.PORT || "3000", 10);
@@ -97,8 +108,13 @@ app.post("/api/analyze-resume", upload.single("file"), async (req, res) => {
         resumeText = docxResult.value;
       } else if (ext === ".pdf" || req.file.mimetype === "application/pdf") {
         try {
-          const pdfData = await pdfParse(req.file.buffer);
-          resumeText = pdfData.text;
+          const parsePdf = await getPdfParse();
+          if (parsePdf) {
+            const pdfData = await parsePdf(req.file.buffer);
+            resumeText = pdfData.text;
+          } else {
+            resumeText = req.file.buffer.toString("utf-8");
+          }
         } catch (pdfErr) {
           resumeText = req.file.buffer.toString("utf-8");
         }
