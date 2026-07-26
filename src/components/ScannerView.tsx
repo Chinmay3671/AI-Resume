@@ -154,7 +154,7 @@ export const ScannerView: React.FC<ScannerViewProps> = ({
         .replace(/\s+/g, ' ')
         .trim();
 
-      if (cleaned.length > 50 && !cleaned.startsWith('%PDF')) {
+      if (cleaned.length > 50 && !cleaned.startsWith('%PDF') && !cleaned.startsWith('PK')) {
         return cleaned;
       }
       return rawText;
@@ -162,18 +162,37 @@ export const ScannerView: React.FC<ScannerViewProps> = ({
     return rawText;
   };
 
+  const processSelectedFile = async (file: File) => {
+    setErrorMessage(null);
+    setUploadedFile(file);
+    setFileName(file.name);
+
+    if (file.name.toLowerCase().endsWith('.docx')) {
+      try {
+        const mammoth = await import('mammoth');
+        const arrayBuffer = await file.arrayBuffer();
+        const result = await mammoth.extractRawText({ arrayBuffer });
+        if (result.value && result.value.trim().length > 0) {
+          setResumeText(result.value.trim());
+          return;
+        }
+      } catch (err) {
+        console.warn('Browser mammoth parsing fallback:', err);
+      }
+    }
+
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      const text = (event.target?.result as string) || '';
+      setResumeText(processUploadedText(text, file));
+    };
+    reader.readAsText(file);
+  };
+
   const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
-      setErrorMessage(null);
-      setUploadedFile(file);
-      setFileName(file.name);
-      const reader = new FileReader();
-      reader.onload = (event) => {
-        const text = event.target?.result as string;
-        setResumeText(processUploadedText(text || '', file));
-      };
-      reader.readAsText(file);
+      processSelectedFile(file);
     }
   };
 
@@ -194,14 +213,7 @@ export const ScannerView: React.FC<ScannerViewProps> = ({
     if (e.dataTransfer.files && e.dropEffect !== 'none') {
       const file = e.dataTransfer.files[0];
       if (file) {
-        setErrorMessage(null);
-        setUploadedFile(file);
-        setFileName(file.name);
-        const reader = new FileReader();
-        reader.onload = (ev) => {
-          setResumeText(processUploadedText((ev.target?.result as string) || '', file));
-        };
-        reader.readAsText(file);
+        processSelectedFile(file);
       }
     }
   };
@@ -220,8 +232,25 @@ export const ScannerView: React.FC<ScannerViewProps> = ({
   };
 
   const startAnalysis = async () => {
-    const textToAnalyze = resumeText.trim();
+    let textToAnalyze = resumeText.trim();
     const documentName = fileName.trim() || uploadedFile?.name || 'Resume_Document.pdf';
+
+    // Ensure we extract clean DOCX text if uploaded file is present but text is binary or empty
+    if (uploadedFile && (textToAnalyze.length === 0 || textToAnalyze.startsWith('PK'))) {
+      if (uploadedFile.name.toLowerCase().endsWith('.docx')) {
+        try {
+          const mammoth = await import('mammoth');
+          const arrayBuffer = await uploadedFile.arrayBuffer();
+          const result = await mammoth.extractRawText({ arrayBuffer });
+          if (result.value && result.value.trim().length > 0) {
+            textToAnalyze = result.value.trim();
+            setResumeText(textToAnalyze);
+          }
+        } catch (e) {
+          console.warn('Docx extraction before analysis:', e);
+        }
+      }
+    }
 
     if (!uploadedFile && !textToAnalyze) {
       setErrorMessage('Please upload a resume file (.docx, .pdf, .txt) or paste resume text before analyzing.');
@@ -249,50 +278,48 @@ export const ScannerView: React.FC<ScannerViewProps> = ({
     }, 1200);
 
     try {
-      let response: Response;
+      let data: any = null;
 
-      if (uploadedFile) {
-        const formData = new FormData();
-        formData.append('file', uploadedFile);
-        if (jobDescription) {
-          formData.append('jobDescription', jobDescription);
+      try {
+        let response: Response;
+        if (uploadedFile) {
+          const formData = new FormData();
+          formData.append('file', uploadedFile);
+          if (jobDescription) {
+            formData.append('jobDescription', jobDescription);
+          }
+          response = await fetch('/api/analyze-resume', {
+            method: 'POST',
+            body: formData
+          });
+        } else {
+          response = await fetch('/api/analyze-resume', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              resumeText: textToAnalyze,
+              fileName: documentName,
+              jobDescription
+            })
+          });
         }
-        response = await fetch('/api/analyze-resume', {
-          method: 'POST',
-          body: formData
-        });
-      } else {
-        response = await fetch('/api/analyze-resume', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            resumeText: textToAnalyze,
-            fileName: documentName,
-            jobDescription
-          })
-        });
+
+        const contentType = response.headers.get('content-type') || '';
+        const textResponse = await response.text();
+
+        if (response.ok && contentType.includes('application/json') && !textResponse.trim().startsWith('<')) {
+          data = JSON.parse(textResponse);
+        }
+      } catch (fetchErr) {
+        console.warn('Backend fetch unreached, using client-side smart analysis:', fetchErr);
       }
 
-      let data: any;
-      const contentType = response.headers.get('content-type') || '';
-      const textResponse = await response.text();
-
-      if (textResponse.trim().startsWith('<') || !contentType.includes('application/json')) {
-        // Static host environment (e.g. GitHub Pages) where backend endpoint returns HTML index.html
+      // If backend is unconfigured, unreachable, or returns static HTML (e.g. GitHub Pages)
+      if (!data || data.error || typeof data.overallScore !== 'number') {
         data = runClientSideSmartAnalysis(textToAnalyze, documentName, jobDescription);
-      } else {
-        try {
-          data = JSON.parse(textResponse);
-        } catch (e) {
-          data = runClientSideSmartAnalysis(textToAnalyze, documentName, jobDescription);
-        }
       }
 
       clearInterval(interval);
-
-      if (data.error && response.ok === false) {
-        throw new Error(data.error || 'Backend service failed to analyze document.');
-      }
 
       const newScan: ScanItem = {
         id: `scan-${Date.now()}`,
