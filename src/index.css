@@ -1,0 +1,174 @@
+@import "tailwindcss";
+
+@layer utilities {
+  .glass-card, .glass-panel {
+    background: rgba(45, 52, 73, 0.6);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: 1px solid rgba(144, 143, 160, 0.2);
+    transition: background-color 0.3s ease, border-color 0.3s ease;
+  }
+  
+  .light-mode .glass-card,
+  .light-mode .glass-panel {
+    background: rgba(241, 245, 249, 0.85) !important;
+    border: 1px solid rgba(203, 213, 225, 0.8) !important;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+  }
+
+  .glow-accent {
+    box-shadow: 0 0 15px rgba(128, 131, 255, 0.3);
+  }
+  .glass-glow-accent {
+    box-shadow: 0 0 20px rgba(192, 193, 255, 0.35);
+  }
+  .upload-dashed {
+    border: 2px dashed #908fa0;
+    border-radius: 12px;
+    transition: all 0.3s ease;
+  }
+  .upload-dashed:hover {
+    border-color: #c0c1ff;
+    background-color: rgba(45, 52, 73, 0.4);
+  }
+  
+  .light-mode .upload-dashed {
+    border-color: #94a3b8 !important;
+    background-color: rgba(248, 250, 252, 0.8) !important;
+  }
+  .light-mode .upload-dashed:hover {
+    border-color: #2563eb !important;
+    background-color: rgba(239, 246, 255, 0.9) !important;
+  }
+
+  .gradient-text {
+    background: linear-gradient(to right, #c0c1ff, #d0bcff);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+  }
+  
+  .light-mode .gradient-text {
+    background: linear-gradient(to right, #1d4ed8, #4338ca) !important;
+    -webkit-background-clip: text !important;
+    background-clip: text !important;
+    color: transparent !important;
+  }
+}
+
+@keyframes spinSlow {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+.animate-spin-slow {
+  animation: spinSlow 3s linear infinite;
+}
+
+/* Light mode Global Styling Overrides */
+.light-mode body,
+.light-mode [class*="min-h-screen"] {
+  background-color: #f8fafc !important;
+  color: #0f172a !important;
+}
+
+/* Header & Navbar Light Mode */
+.light-mode header {
+  background-color: rgba(255, 255, 255, 0.9) !important;
+  border-color: rgba(226, 232, 240, 0.8) !important;
+}
+
+.light-mode nav button {
+  color: #475569 !important;
+}
+
+.light-mode nav button:hover {
+  color: #0f172a !important;
+}
+
+.light-mode nav button[class*="border-b-2"] {
+  color: #2563eb !important;
+  border-color: #2563eb !important;
+}
+
+/* Action Buttons & Secondary Elements */
+.light-mode button[class*="bg-\[#2d3449\]"] {
+  background-color: #e2e8f0 !important;
+  color: #1e293b !important;
+  border-color: #cbd5e1 !important;
+}
+
+.light-mode button[class*="bg-\[#2d3449\]"]:hover {
+  background-color: #cbd5e1 !important;
+  color: #0f172a !important;
+}
+
+/* Text Palette Light Mode Overrides */
+.light-mode [class*="text-\[#dae2fd\]"] {
+  color: #0f172a !important;
+}
+
+.light-mode [class*="text-\[#c7c4d7\]"] {
+  color: #475569 !important;
+}
+
+.light-mode [class*="text-\[#c0c1ff\]"] {
+  color: #2563eb !important;
+}
+
+.light-mode [class*="text-\[#908fa0\]"] {
+  color: #64748b !important;
+}
+
+.light-mode [class*="bg-\[#131b2e\]"],
+.light-mode [class*="bg-\[#171f33\]"] {
+  background-color: #ffffff !important;
+  border-color: #e2e8f0 !important;
+}
+
+/* Inputs & Textareas */
+.light-mode input,
+.light-mode textarea {
+  background-color: #ffffff !important;
+  color: #0f172a !important;
+  border-color: #cbd5e1 !important;
+}
+
+.light-mode input::placeholder,
+.light-mode textarea::placeholder {
+  color: #94a3b8 !important;
+}
+
+/* Table Styling */
+.light-mode table {
+  background-color: #ffffff !important;
+  color: #0f172a !important;
+}
+
+.light-mode tr:hover {
+  background-color: #f1f5f9 !important;
+}
+
+.light-mode th {
+  background-color: #f8fafc !important;
+  color: #334155 !important;
+  border-color: #e2e8f0 !important;
+}
+
+.light-mode td {
+  border-color: #e2e8f0 !important;
+}
+
+.light-mode p,
+.light-mode h1,
+.light-mode h2,
+.light-mode h3,
+.light-mode h4,
+.light-mode h5,
+.light-mode h6 {
+  color: #0f172a !important;
+}
+
+.light-mode [class*="border-\[\#464554\]"] {
+  border-color: #e2e8f0 !important;
+}

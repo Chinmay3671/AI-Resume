@@ -1,0 +1,6 @@
+{
+  "name": "ResuMetrics AI",
+  "description": "AI-powered ATS resume scanner, scan history dashboard, analytics hub, and AI bullet rewriter.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
