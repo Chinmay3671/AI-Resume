@@ -1,10 +1,13 @@
 import { initializeApp, getApps, getApp } from 'firebase/app';
-import { getAuth, GoogleAuthProvider, signInWithPopup, signOut as firebaseSignOut } from 'firebase/auth';
+import { getAuth, GoogleAuthProvider, signInWithPopup, signOut as firebaseSignOut, User } from 'firebase/auth';
 import { getFirestore } from 'firebase/firestore';
 import { UserProfile } from './types';
 
+const rawApiKey = import.meta.env.VITE_FIREBASE_API_KEY || "";
+const isPlaceholderKey = !rawApiKey || rawApiKey.includes('YOUR_FIREBASE') || rawApiKey === "your_firebase_api_key_here";
+
 const firebaseConfig = {
-  apiKey: import.meta.env.VITE_FIREBASE_API_KEY || "",
+  apiKey: rawApiKey,
   authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN || "AI-Resume.firebaseapp.com",
   projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID || "AI-Resume",
   storageBucket: import.meta.env.VITE_FIREBASE_STORAGE_BUCKET || "AI-Resume.firebasestorage.app",
@@ -20,15 +23,32 @@ export const auth = getAuth(app);
 export const googleProvider = new GoogleAuthProvider();
 export const db = getFirestore(app);
 
-googleProvider.setCustomParameters({
-  prompt: 'select_account'
-});
+/**
+ * Clean Google Login handler matching exact user specification
+ * Ensures NO custom parameters like custom continueUrl or redirectUrl are passed
+ */
+export const handleGoogleLogin = async (): Promise<User | null> => {
+  try {
+    const provider = new GoogleAuthProvider();
+    // Ensure NO custom parameters like custom continueUrl or redirectUrl are passed here
+    const result = await signInWithPopup(auth, provider);
+
+    console.log("Logged in user:", result.user);
+    return result.user;
+  } catch (error: any) {
+    console.error("Authentication error:", error);
+    throw error;
+  }
+};
 
 export async function signInWithGoogle(): Promise<UserProfile> {
+  if (isPlaceholderKey) {
+    throw new Error('⚠️ Invalid Firebase API Key in .env! Please open .env and replace VITE_FIREBASE_API_KEY with your actual Web API Key from Firebase Console (https://console.firebase.google.com -> Project Settings -> General -> Web API Key). Or click "⚡ Quick Demo Sign-In" below.');
+  }
+
   try {
-    // Real Firebase Google OAuth Popup Sign In
-    const result = await signInWithPopup(auth, googleProvider);
-    const user = result.user;
+    const user = await handleGoogleLogin();
+    if (!user) throw new Error("Google login failed.");
     const idToken = await user.getIdToken();
 
     return {
@@ -46,8 +66,10 @@ export async function signInWithGoogle(): Promise<UserProfile> {
     console.error('Firebase Google Auth error:', err);
     if (err.code === 'auth/popup-closed-by-user') {
       throw new Error('Google Sign-In popup was closed before completing authentication.');
+    } else if (err.code === 'auth/configuration-not-found' || err.message?.includes('configuration-not-found')) {
+      throw new Error('⚠️ Google Sign-In is not enabled in Firebase Console! Go to Firebase Console (https://console.firebase.google.com) -> Authentication -> Sign-in method -> Click "Google" -> Enable & Save.');
     } else if (err.code === 'auth/invalid-api-key' || err.code === 'auth/api-key-not-valid' || err.message?.includes('API key')) {
-      throw new Error('Firebase API key in .env is invalid. Please update VITE_FIREBASE_API_KEY in .env with your real API key from Firebase Console (https://console.firebase.google.com).');
+      throw new Error('⚠️ Invalid Firebase API Key! Please copy your real Web API Key from Firebase Console (https://console.firebase.google.com -> Project Settings -> General) and paste it into .env as VITE_FIREBASE_API_KEY.');
     }
     throw new Error(err.message || 'Failed to authenticate with Google.');
   }

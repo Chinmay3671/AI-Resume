@@ -1,1 +1,1 @@
-export { app, auth, googleProvider, db, signInWithGoogle, signOutFromFirebase } from '../firebase';
+export { app, auth, googleProvider, db, handleGoogleLogin, signInWithGoogle, signOutFromFirebase } from '../firebase';
