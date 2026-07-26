@@ -2,38 +2,8 @@
   "buildCommand": "npm run build",
   "outputDirectory": "dist",
   "framework": "vite",
-  "env": [
-    {
-      "key": "GEMINI_API_KEY",
-      "description": "Google Gemini API Key for resume analysis",
-      "type": "secret"
-    },
-    {
-      "key": "VITE_SUPABASE_URL",
-      "description": "Supabase project URL (optional)",
-      "type": "string"
-    },
-    {
-      "key": "VITE_SUPABASE_ANON_KEY",
-      "description": "Supabase anonymous key (optional)",
-      "type": "secret"
-    },
-    {
-      "key": "NODE_ENV",
-      "description": "Environment (production or development)",
-      "default": "production",
-      "type": "string"
-    }
-  ],
-  "functions": {
-    "api/analyze-resume": {
-      "memory": 512,
-      "maxDuration": 30
-    },
-    "api/rewrite-bullet": {
-      "memory": 256,
-      "maxDuration": 20
-    }
+  "env": {
+    "NODE_ENV": "production"
   },
   "git": {
     "deploymentEnabled": true
