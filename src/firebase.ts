@@ -66,6 +66,8 @@ export async function signInWithGoogle(): Promise<UserProfile> {
     console.error('Firebase Google Auth error:', err);
     if (err.code === 'auth/popup-closed-by-user') {
       throw new Error('Google Sign-In popup was closed before completing authentication.');
+    } else if (err.code === 'auth/unauthorized-domain' || err.message?.includes('unauthorized-domain')) {
+      throw new Error('⚠️ Unauthorized Domain Error! Please add your deployment domain (e.g. chinmay3671.github.io or your deployed URL) to Firebase Console (https://console.firebase.google.com) -> Authentication -> Settings -> Authorized domains.');
     } else if (err.code === 'auth/configuration-not-found' || err.message?.includes('configuration-not-found')) {
       throw new Error('⚠️ Google Sign-In is not enabled in Firebase Console! Go to Firebase Console (https://console.firebase.google.com) -> Authentication -> Sign-in method -> Click "Google" -> Enable & Save.');
     } else if (err.code === 'auth/invalid-api-key' || err.code === 'auth/api-key-not-valid' || err.message?.includes('API key')) {
