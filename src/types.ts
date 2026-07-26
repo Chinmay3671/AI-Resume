@@ -1,6 +1,16 @@
-export type NavTab = 'scanner' | 'dashboard' | 'analytics' | 'pricing';
+export type NavTab = 'hero' | 'scanner' | 'dashboard' | 'analytics' | 'pricing';
 
 export type ScanStatus = 'Passed' | 'Review' | 'Fixes Needed';
+
+export interface UserProfile {
+  id: string;
+  name: string;
+  email: string;
+  role?: string;
+  tier?: string;
+  avatarUrl?: string;
+  isLoggedIn: boolean;
+}
 
 export interface BulletPoint {
   id: string;
