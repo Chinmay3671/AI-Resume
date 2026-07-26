@@ -102,11 +102,19 @@ export const Navbar: React.FC<NavbarProps> = ({
             <div className="relative">
               <button
                 onClick={() => setUserDropdownOpen(!userDropdownOpen)}
-                className="flex items-center space-x-2 text-[#c0c1ff] hover:text-white transition-all duration-200 p-1.5 rounded-xl hover:bg-[#2d3449]/60 cursor-pointer border border-[#8083ff]/30 bg-[#131b2e]"
+                className="flex items-center space-x-2 text-[#c0c1ff] hover:text-white transition-all duration-200 p-1.5 rounded-xl hover:bg-[#2d3449]/60 cursor-pointer border border-[#8083ff]/40 bg-[#131b2e]"
               >
-                <div className="w-7 h-7 rounded-full bg-[#8083ff] text-[#0d0096] font-bold text-xs flex items-center justify-center">
-                  {user?.name?.charAt(0).toUpperCase() || 'U'}
-                </div>
+                {user?.avatarUrl ? (
+                  <img
+                    src={user.avatarUrl}
+                    alt={user.name}
+                    className="w-7 h-7 rounded-full object-cover border border-[#c0c1ff]"
+                  />
+                ) : (
+                  <div className="w-7 h-7 rounded-full bg-[#8083ff] text-[#0d0096] font-bold text-xs flex items-center justify-center">
+                    {user?.name?.charAt(0).toUpperCase() || 'U'}
+                  </div>
+                )}
                 <span className="hidden lg:inline text-xs font-semibold text-[#dae2fd]">
                   {user?.name?.split(' ')[0]}
                 </span>
@@ -115,10 +123,28 @@ export const Navbar: React.FC<NavbarProps> = ({
 
               {/* User Dropdown Menu */}
               {userDropdownOpen && (
-                <div className="absolute right-0 mt-2 w-56 bg-[#131b2e] border border-[#464554]/60 rounded-2xl p-2 shadow-2xl space-y-1 z-50 animate-fade-in">
-                  <div className="px-3 py-2 border-b border-[#464554]/30 space-y-0.5">
-                    <p className="text-xs font-bold text-[#dae2fd]">{user?.name}</p>
-                    <p className="text-[11px] text-[#908fa0] truncate">{user?.email}</p>
+                <div className="absolute right-0 mt-2 w-60 bg-[#131b2e] border border-[#464554]/60 rounded-2xl p-2 shadow-2xl space-y-1 z-50 animate-fade-in">
+                  <div className="px-3 py-2.5 border-b border-[#464554]/30 space-y-1 flex items-center space-x-3">
+                    {user?.avatarUrl ? (
+                      <img
+                        src={user.avatarUrl}
+                        alt={user.name}
+                        className="w-9 h-9 rounded-full object-cover border border-[#c0c1ff] shrink-0"
+                      />
+                    ) : (
+                      <div className="w-9 h-9 rounded-full bg-[#8083ff] text-[#0d0096] font-extrabold text-sm flex items-center justify-center shrink-0">
+                        {user?.name?.charAt(0).toUpperCase() || 'U'}
+                      </div>
+                    )}
+                    <div className="truncate">
+                      <p className="text-xs font-bold text-[#dae2fd] truncate">{user?.name}</p>
+                      <p className="text-[11px] text-[#908fa0] truncate">{user?.email}</p>
+                      {user?.provider === 'google.com' && (
+                        <span className="inline-block mt-0.5 px-1.5 py-0.2 rounded bg-[#4285F4]/20 text-[#4285F4] text-[9px] font-bold">
+                          Google Auth
+                        </span>
+                      )}
+                    </div>
                   </div>
 
                   <button
@@ -149,7 +175,7 @@ export const Navbar: React.FC<NavbarProps> = ({
                       className="w-full text-left px-3 py-2 rounded-xl text-xs font-bold text-[#ffb4ab] hover:bg-[#ffb4ab]/10 flex items-center space-x-2 transition-colors cursor-pointer"
                     >
                       <LogOut className="w-4 h-4" />
-                      <span>Log Out</span>
+                      <span>Sign Out</span>
                     </button>
                   </div>
                 </div>
@@ -211,9 +237,22 @@ export const Navbar: React.FC<NavbarProps> = ({
             {isLoggedIn ? (
               <>
                 <div className="px-4 py-2 bg-[#131b2e] rounded-xl border border-[#464554]/40 flex items-center justify-between">
-                  <div>
-                    <p className="text-xs font-bold text-[#dae2fd]">{user?.name}</p>
-                    <p className="text-[10px] text-[#908fa0]">{user?.email}</p>
+                  <div className="flex items-center space-x-2.5">
+                    {user?.avatarUrl ? (
+                      <img
+                        src={user.avatarUrl}
+                        alt={user.name}
+                        className="w-8 h-8 rounded-full object-cover border border-[#c0c1ff]"
+                      />
+                    ) : (
+                      <div className="w-8 h-8 rounded-full bg-[#8083ff] text-[#0d0096] font-extrabold text-xs flex items-center justify-center">
+                        {user?.name?.charAt(0).toUpperCase() || 'U'}
+                      </div>
+                    )}
+                    <div>
+                      <p className="text-xs font-bold text-[#dae2fd]">{user?.name}</p>
+                      <p className="text-[10px] text-[#908fa0]">{user?.email}</p>
+                    </div>
                   </div>
                   <button
                     onClick={() => {
@@ -234,7 +273,7 @@ export const Navbar: React.FC<NavbarProps> = ({
                   className="w-full py-2.5 bg-[#ffb4ab]/15 text-[#ffb4ab] border border-[#ffb4ab]/30 font-bold text-xs rounded-xl flex items-center justify-center space-x-2 cursor-pointer"
                 >
                   <LogOut className="w-4 h-4" />
-                  <span>Log Out</span>
+                  <span>Sign Out</span>
                 </button>
               </>
             ) : (

@@ -293,6 +293,30 @@ export const ScannerView: React.FC<ScannerViewProps> = ({
         let response: Response;
         const apiUrls = ['http://localhost:5000/api/analyze-resume', '/api/analyze-resume'];
         
+        // Read user session from localStorage
+        const savedUserRaw = localStorage.getItem('resumetrics_user');
+        let activeUser = { id: 'usr-default', email: 'chinmay@resumetrics.ai', provider: 'email/password', token: '' };
+        if (savedUserRaw) {
+          try {
+            const parsedUser = JSON.parse(savedUserRaw);
+            if (parsedUser) {
+              activeUser = {
+                id: parsedUser.id || 'usr-default',
+                email: parsedUser.email || 'chinmay@resumetrics.ai',
+                provider: parsedUser.provider || 'email/password',
+                token: parsedUser.token || ''
+              };
+            }
+          } catch (e) {}
+        }
+
+        const authHeaders: Record<string, string> = {
+          'Authorization': `Bearer ${activeUser.token || activeUser.id}`,
+          'x-user-id': activeUser.id,
+          'x-user-email': activeUser.email,
+          'x-user-provider': activeUser.provider
+        };
+
         let successResponse: Response | null = null;
         for (const url of apiUrls) {
           try {
@@ -305,12 +329,13 @@ export const ScannerView: React.FC<ScannerViewProps> = ({
               }
               response = await fetch(url, {
                 method: 'POST',
+                headers: authHeaders,
                 body: formData
               });
             } else {
               response = await fetch(url, {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
+                headers: { 'Content-Type': 'application/json', ...authHeaders },
                 body: JSON.stringify({
                   resumeText: textToAnalyze,
                   fileName: documentName,

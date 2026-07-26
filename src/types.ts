@@ -9,6 +9,8 @@ export interface UserProfile {
   role?: string;
   tier?: string;
   avatarUrl?: string;
+  provider?: string;
+  token?: string;
   isLoggedIn: boolean;
 }
 

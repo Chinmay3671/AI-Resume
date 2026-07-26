@@ -22,20 +22,15 @@ export default function App() {
     const saved = localStorage.getItem('resumetrics_user');
     if (saved) {
       try {
-        return JSON.parse(saved);
+        const parsed = JSON.parse(saved);
+        if (parsed && parsed.isLoggedIn) {
+          return parsed;
+        }
       } catch (e) {
         console.error(e);
       }
     }
-    // Default logged in demo user for immediate access
-    return {
-      id: 'usr-default',
-      name: 'Chinmay U.',
-      email: 'chinmay@resumetrics.ai',
-      role: 'Computer Science & Engineering Student',
-      tier: 'Pro Job Hunter',
-      isLoggedIn: true,
-    };
+    return null;
   });
 
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
@@ -100,8 +95,13 @@ export default function App() {
     triggerToast(`Welcome back, ${authenticatedUser.name}!`);
   };
 
-  const handleLogout = () => {
+  const handleLogout = async () => {
     const prevName = user?.name;
+    try {
+      const { signOutFromFirebase } = await import('./firebase');
+      await signOutFromFirebase();
+    } catch (e) {}
+    localStorage.removeItem('resumetrics_user');
     setUser(null);
     triggerToast(`Logged out successfully. See you soon${prevName ? ', ' + prevName : ''}!`);
   };
@@ -265,9 +265,17 @@ export default function App() {
             {activeModal === 'userProfile' && (
               <div className="space-y-4">
                 <div className="flex items-center space-x-3 border-b border-[#464554]/40 pb-4">
-                  <div className="w-12 h-12 rounded-full bg-[#8083ff] text-[#0d0096] font-extrabold text-lg flex items-center justify-center">
-                    {user?.name?.charAt(0).toUpperCase() || 'U'}
-                  </div>
+                  {user?.avatarUrl ? (
+                    <img
+                      src={user.avatarUrl}
+                      alt={user.name}
+                      className="w-12 h-12 rounded-full object-cover border-2 border-[#c0c1ff] shadow-md shrink-0"
+                    />
+                  ) : (
+                    <div className="w-12 h-12 rounded-full bg-[#8083ff] text-[#0d0096] font-extrabold text-lg flex items-center justify-center shrink-0">
+                      {user?.name?.charAt(0).toUpperCase() || 'U'}
+                    </div>
+                  )}
                   <div className="flex-grow">
                     {isEditingName ? (
                       <div className="flex items-center space-x-2">
