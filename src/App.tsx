@@ -26,8 +26,19 @@ export default function App() {
     return INITIAL_SCANS;
   });
 
+  const [userName, setUserName] = useState<string>(() => {
+    return localStorage.getItem('resumetrics_username') || 'Chinmay U.';
+  });
+  const [isEditingName, setIsEditingName] = useState<boolean>(false);
+  const [nameInput, setNameInput] = useState<string>(userName);
+
   const [activeScanResult, setActiveScanResult] = useState<ScanItem | null>(null);
   const [activeModal, setActiveModal] = useState<'userProfile' | 'privacy' | 'terms' | 'ats' | null>(null);
+
+  // Sync username to localStorage
+  useEffect(() => {
+    localStorage.setItem('resumetrics_username', userName);
+  }, [userName]);
 
   // Sync theme to localStorage and DOM with dark-mode / light-mode classes
   useEffect(() => {
@@ -98,7 +109,12 @@ export default function App() {
         onTabChange={handleTabChange}
         theme={theme}
         onThemeChange={toggleTheme}
-        onOpenUserProfile={() => setActiveModal('userProfile')}
+        userName={userName}
+        onOpenUserProfile={() => {
+          setNameInput(userName);
+          setIsEditingName(false);
+          setActiveModal('userProfile');
+        }}
       />
 
       {/* Main View Router */}
@@ -175,8 +191,42 @@ export default function App() {
                   <div className="w-12 h-12 rounded-full bg-[#8083ff]/20 flex items-center justify-center text-[#c0c1ff]">
                     <User className="w-6 h-6" />
                   </div>
-                  <div>
-                    <h3 className="text-lg font-bold text-[#dae2fd]">Alex M.</h3>
+                  <div className="flex-grow">
+                    {isEditingName ? (
+                      <div className="flex items-center space-x-2">
+                        <input
+                          type="text"
+                          value={nameInput}
+                          onChange={(e) => setNameInput(e.target.value)}
+                          className="bg-[#171f33] border border-[#c0c1ff] text-[#dae2fd] text-sm rounded px-2.5 py-1 focus:outline-none"
+                          autoFocus
+                        />
+                        <button
+                          onClick={() => {
+                            if (nameInput.trim()) {
+                              setUserName(nameInput.trim());
+                            }
+                            setIsEditingName(false);
+                          }}
+                          className="px-2.5 py-1 bg-[#4edea3] text-[#003824] font-bold text-xs rounded"
+                        >
+                          Save
+                        </button>
+                      </div>
+                    ) : (
+                      <div className="flex items-center space-x-2">
+                        <h3 className="text-lg font-bold text-[#dae2fd]">{userName}</h3>
+                        <button
+                          onClick={() => {
+                            setNameInput(userName);
+                            setIsEditingName(true);
+                          }}
+                          className="text-[11px] text-[#c0c1ff] hover:underline cursor-pointer"
+                        >
+                          (Edit)
+                        </button>
+                      </div>
+                    )}
                     <p className="text-xs text-[#c7c4d7]">Computer Science & Engineering Student</p>
                   </div>
                 </div>
@@ -200,7 +250,7 @@ export default function App() {
                 </div>
                 <button
                   onClick={() => setActiveModal(null)}
-                  className="w-full py-2 bg-[#8083ff]/20 text-[#c0c1ff] font-semibold rounded-lg hover:bg-[#8083ff]/30 text-xs transition-colors"
+                  className="w-full py-2 bg-[#8083ff]/20 text-[#c0c1ff] font-semibold rounded-lg hover:bg-[#8083ff]/30 text-xs transition-colors cursor-pointer"
                 >
                   Close Profile
                 </button>

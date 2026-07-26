@@ -8,6 +8,7 @@ interface NavbarProps {
   theme?: 'light' | 'dark';
   onThemeChange?: () => void;
   onOpenUserProfile?: () => void;
+  userName?: string;
 }
 
 export const Navbar: React.FC<NavbarProps> = ({
@@ -16,6 +17,7 @@ export const Navbar: React.FC<NavbarProps> = ({
   theme = 'dark',
   onThemeChange,
   onOpenUserProfile,
+  userName = 'Chinmay U.',
 }) => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
@@ -68,7 +70,7 @@ export const Navbar: React.FC<NavbarProps> = ({
             onClick={onOpenUserProfile}
             className="hidden md:inline text-sm text-[#c7c4d7] hover:text-[#c0c1ff] font-medium transition-colors cursor-pointer"
           >
-            Alex M. - CSE
+            {userName} - CSE
           </button>
           <button
             title="Toggle Theme"
@@ -122,7 +124,7 @@ export const Navbar: React.FC<NavbarProps> = ({
             }}
             className="w-full text-left px-3 py-2.5 rounded-lg text-base font-medium text-[#c0c1ff] hover:bg-[#2d3449]/40"
           >
-            User Account (Alex M.)
+            User Account ({userName})
           </button>
         </div>
       )}
